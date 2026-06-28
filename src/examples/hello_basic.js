@@ -8,15 +8,26 @@ const client = redis.createClient({
 });
 
 // Run a Redis command, receive response in callback.
-client.set('hello', 'world', (err, reply) => {
-  console.log(reply); // OK
+// client.set('hello', 'world', (err, reply) => {
+//   console.log(reply); // OK
 
-  // Run a second Redis command now we know that the
-  // first one completed.  Again, response in callback.
-  client.get('hello', (getErr, getReply) => {
-    console.log(getReply); // world
+//   // Run a second Redis command now we know that the
+//   // first one completed.  Again, response in callback.
+  
+// });
+client.get('hello', (getErr, getReply) => {
+  console.log(getReply); // world
 
-    // Quit client and free up resources.
-    client.quit();
-  });
+  // Quit client and free up resources.
+  client.quit();
 });
+// client.set('user:name', "hasan", (err, reply) =>{
+//   if(err){
+//     console.log(err);
+//   }
+//   console.log("Second Set",reply);
+  
+// })
+client.get('user:name', (getErr,reply)=>{
+  console.log("Second Get command result:",reply)
+})
