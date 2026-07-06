@@ -53,12 +53,31 @@ const findById = async (siteId, timestamp) => {
  */
 const updateOptimized = async (meterReading) => {
   const client = redis.getClient();
+
+  // ------------ Old Code ------------
   const key = keyGenerator.getSiteStatsKey(meterReading.siteId, meterReading.dateTime);
-
-  // Load script if needed, uses cached SHA if already loaded.
-  await compareAndUpdateScript.load();
-
+  
+  // ------------ New Code ------------
+  
   // START Challenge #3
+  await compareAndUpdateScript.load();
+  // Redis transactions 
+  const tx = client.multi();
+  
+  // Update by transaction
+  tx.hset(key, 'lastReportingTime', timeUtils.getCurrentTimestamp());
+  tx.hincrby(key, 'meterReadingCount', 1);
+  tx.expire(key, weekSeconds);
+
+  
+  
+  // Lua script to update the site stats
+  tx.evalshaAsync(compareAndUpdateScript.updateIfGreater(key, 'maxWhGenerated', meterReading.whGenerated));
+  tx.evalshaAsync(compareAndUpdateScript.updateIfLess(key, 'minWhGenerated', meterReading.whGenerated));
+  tx.evalshaAsync(compareAndUpdateScript.updateIfGreater(key, 'maxCapacity', meterReading.whGenerated - meterReading.whUsed));
+  
+  // exicute the transaction
+  tx.execAsync();
   // END Challenge #3
 };
 /* eslint-enable */
@@ -106,5 +125,5 @@ const updateBasic = async (meterReading) => {
 
 module.exports = {
   findById,
-  update: updateBasic, // updateOptimized
+  update: updateOptimized, // updateOptimized
 };
