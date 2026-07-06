@@ -72,12 +72,12 @@ const updateOptimized = async (meterReading) => {
   
   
   // Lua script to update the site stats
-  tx.evalshaAsync(compareAndUpdateScript.updateIfGreater(key, 'maxWhGenerated', meterReading.whGenerated));
-  tx.evalshaAsync(compareAndUpdateScript.updateIfLess(key, 'minWhGenerated', meterReading.whGenerated));
-  tx.evalshaAsync(compareAndUpdateScript.updateIfGreater(key, 'maxCapacity', meterReading.whGenerated - meterReading.whUsed));
+  tx.evalsha(compareAndUpdateScript.updateIfGreater(key, 'maxWhGenerated', meterReading.whGenerated));
+  tx.evalsha(compareAndUpdateScript.updateIfLess(key, 'minWhGenerated', meterReading.whGenerated));
+  tx.evalsha(compareAndUpdateScript.updateIfGreater(key, 'maxCapacity', meterReading.whGenerated - meterReading.whUsed));
   
   // exicute the transaction
-  tx.execAsync();
+ await tx.execAsync();
   // END Challenge #3
 };
 /* eslint-enable */
