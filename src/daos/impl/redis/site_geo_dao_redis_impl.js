@@ -112,7 +112,7 @@ const findAll = async () => {
   const client = redis.getClient();
 
   const siteIds = await client.zrangeAsync(keyGenerator.getSiteGeoKey(), 0, -1);
-  const sites = [];
+  if(siteIds.length === 0)[]
   const sitePipeline = client.batch();
   for (const siteId of siteIds) {
     const siteKey = keyGenerator.getSiteHashKey(siteId);
