@@ -11,7 +11,28 @@ const hitSlidingWindow = async (name, opts) => {
   const client = redis.getClient();
 
   // START Challenge #7
-  return -2;
+  const key = keyGenerator.getKey(`limiter:${name}:${opts.interval}:${opts.maxHits}`);
+  const now = timeUtils.getCurrentTimestampMillis();
+  const tx = client.multi();
+
+  // 1. new entry in sotred set
+  tx.zadd(key, now, `${now}-${Math.random()}`);
+
+  // 2. Remove entries older than the interval
+  tx.zremrangebyscore(key, 0, now - opts.interval)
+
+  // 3. get current number of hits
+  tx.zcard(key);
+
+  const result= await tx.execAsync();
+  const hits = result[2];
+  let hitsRemaining;
+  if(hits > opts.maxHits ){
+    hitsRemaining = -1;
+  }else{
+    hitsRemaining = opts.maxHits - hits;
+  }
+  return hitsRemaining;
   // END Challenge #7
 };
 
